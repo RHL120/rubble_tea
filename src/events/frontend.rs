@@ -11,6 +11,12 @@ pub trait Event {
     fn from_system_event(se: SystemEvent) -> Self;
 }
 
+impl Event for SystemEvent {
+    fn from_system_event(se: SystemEvent) -> Self {
+        se
+    }
+}
+
 pub fn watch_key<E: Event>(tx: mpsc::Sender<E>) {
     loop {
         let key = get_key();
