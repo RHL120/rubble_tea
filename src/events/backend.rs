@@ -31,6 +31,7 @@ fn key_f(k: i32) -> Option<Key> {
 pub fn get_key() -> Key {
     use Key::*;
     let k = ncurses::getch();
+    ncurses::refresh();
     if k == -1 {
         panic!("There has been an error with ncurses please report this as a bug");
     } else if let Some(x) = key_f(k) {

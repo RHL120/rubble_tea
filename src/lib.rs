@@ -28,14 +28,17 @@ pub fn run<E: events::Event + std::marker::Send + 'static, M: Model<E>>(
         std::thread::spawn(move || tx.send(f()).unwrap());
     }
     loop {
+        ncurses::clear();
+        ncurses::addstr(model.view().as_str());
+        ncurses::refresh();
         for i in rx.iter() {
+            ncurses::clear();
+            ncurses::addstr(model.view().as_str());
+            ncurses::refresh();
             if let Some(f) = model.update(i) {
                 let tx = tx.clone();
                 std::thread::spawn(move || tx.send(f()).unwrap());
             }
-            ncurses::clear();
-            ncurses::addstr(model.view().as_str());
-            ncurses::refresh();
         }
     }
 }
