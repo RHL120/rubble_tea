@@ -28,6 +28,8 @@ pub fn watch_key<E: Event>(tx: mpsc::Sender<E>) {
 }
 pub fn watch_size_change<E: Event>(tx: mpsc::Sender<E>) {
     let (mut ow, mut oh) = get_window_size();
+    tx.send(E::from_system_event(SystemEvent::WindowResize(ow, oh)))
+        .unwrap();
     loop {
         std::thread::sleep(std::time::Duration::new(0, 500000000));
         let (nw, nh) = get_window_size();
