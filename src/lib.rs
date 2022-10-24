@@ -16,9 +16,6 @@ pub enum Key {
     //Alt(char), control and alt are a pain to deal with
     //Ctrl(char),
     Esc,
-
-    #[doc(hidden)]
-    __IsNotComplete,
 }
 
 pub fn key_f(k: i32) -> Option<Key> {
