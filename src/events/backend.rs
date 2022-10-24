@@ -18,6 +18,15 @@ pub enum Key {
     Esc,
 }
 
+pub enum SystemEvent {
+    KeyPress(Key),
+    WindowResize(u8, u8),
+}
+
+pub trait Event {
+    fn from_system_event(se: SystemEvent) -> Self;
+}
+
 fn key_f(k: i32) -> Option<Key> {
     use Key::*;
     for i in 1..13 {
@@ -54,4 +63,15 @@ pub fn get_key() -> Key {
             x => Char(char::from_u32(x as u32).unwrap()),
         }
     }
+}
+
+pub fn get_window_size() -> (u8, u8) {
+    let mut width: i8 = 0;
+    let mut height: i8 = 0;
+    ncurses::getmaxx(core::ptr::addr_of_mut!(width));
+    ncurses::getmaxy(core::ptr::addr_of_mut!(height));
+    if width <= 0 || height <= 0 {
+        panic!("ncurses error")
+    }
+    (width as u8, height as u8)
 }
