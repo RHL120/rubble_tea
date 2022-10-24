@@ -18,15 +18,6 @@ pub enum Key {
     Esc,
 }
 
-pub enum SystemEvent {
-    KeyPress(Key),
-    WindowResize(u8, u8),
-}
-
-pub trait Event {
-    fn from_system_event(se: SystemEvent) -> Self;
-}
-
 fn key_f(k: i32) -> Option<Key> {
     use Key::*;
     for i in 1..13 {
