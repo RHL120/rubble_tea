@@ -1,2 +1,3 @@
 mod backend;
-pub mod frontend;
+mod frontend;
+pub use frontend::*;
