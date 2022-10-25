@@ -1,44 +1,25 @@
-pub mod events;
-use std::sync::mpsc;
+pub use termion::event::Key;
+pub enum SystemEvent {
+    KeyPress(Key),
+    WindowResize(u8, u8),
+}
 
-pub trait Model<E: events::Event> {
+pub trait Event {
+    fn from_system_event(se: SystemEvent) -> Self;
+}
+
+pub trait Model<E: Event> {
     fn update(&mut self, e: E) -> Option<fn() -> E>;
     fn view(&self) -> String;
 }
 
-pub fn run<E: events::Event + std::marker::Send + 'static, M: Model<E>>(
+impl Event for SystemEvent {
+    fn from_system_event(se: SystemEvent) -> Self {
+        se
+    }
+}
+pub fn run<E: Event + std::marker::Send + 'static, M: Model<E>>(
     model: &mut M,
     cmd: Option<fn() -> E>,
 ) {
-    ncurses::initscr();
-    ncurses::raw();
-    ncurses::keypad(ncurses::stdscr(), true);
-    ncurses::noecho();
-    let (tx, rx): (mpsc::Sender<E>, mpsc::Receiver<E>) = mpsc::channel();
-    {
-        let tx = tx.clone();
-        std::thread::spawn(move || events::watch_key(tx));
-    }
-    {
-        let tx = tx.clone();
-        std::thread::spawn(move || events::watch_size_change(tx));
-    }
-    if let Some(f) = cmd {
-        let tx = tx.clone();
-        std::thread::spawn(move || tx.send(f()).unwrap());
-    }
-    loop {
-        ncurses::clear();
-        ncurses::addstr(model.view().as_str());
-        ncurses::refresh();
-        for i in rx.iter() {
-            ncurses::clear();
-            ncurses::addstr(model.view().as_str());
-            ncurses::refresh();
-            if let Some(f) = model.update(i) {
-                let tx = tx.clone();
-                std::thread::spawn(move || tx.send(f()).unwrap());
-            }
-        }
-    }
 }
