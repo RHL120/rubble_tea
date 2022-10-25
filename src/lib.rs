@@ -7,10 +7,12 @@ pub use termion::event::Key;
 pub enum SystemEvent {
     KeyPress(Key),
     WindowResize(u16, u16),
+    Quit,
 }
 
 pub trait Event {
     fn from_system_event(se: SystemEvent) -> Self;
+    fn to_system_event(self) -> Option<SystemEvent>;
 }
 
 pub trait Model<E: Event> {
@@ -21,6 +23,9 @@ pub trait Model<E: Event> {
 impl Event for SystemEvent {
     fn from_system_event(se: SystemEvent) -> Self {
         se
+    }
+    fn to_system_event(self) -> Option<SystemEvent> {
+        Some(self)
     }
 }
 
