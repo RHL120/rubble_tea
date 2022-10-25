@@ -4,6 +4,7 @@ use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
 pub use termion::event::Key;
+#[derive(Clone)]
 pub enum SystemEvent {
     KeyPress(Key),
     WindowResize(u16, u16),
@@ -12,11 +13,11 @@ pub enum SystemEvent {
 
 pub trait Event {
     fn from_system_event(se: SystemEvent) -> Self;
-    fn to_system_event(self) -> Option<SystemEvent>;
+    fn to_system_event(&self) -> Option<SystemEvent>;
 }
 
 pub trait Model<E: Event> {
-    fn update(&mut self, e: E) -> Option<fn() -> E>;
+    fn update(&mut self, e: &E) -> Option<fn() -> E>;
     fn view(&self) -> String;
 }
 
@@ -24,8 +25,8 @@ impl Event for SystemEvent {
     fn from_system_event(se: SystemEvent) -> Self {
         se
     }
-    fn to_system_event(self) -> Option<SystemEvent> {
-        Some(self)
+    fn to_system_event(&self) -> Option<SystemEvent> {
+        Some(self.clone())
     }
 }
 
@@ -72,7 +73,7 @@ pub fn run<E: Event + std::marker::Send + 'static, M: Model<E>>(
     }
     //We are guaranteed to recive at least one event on startup (the resize event)
     for i in rx.iter() {
-        if let Some(f) = model.update(i) {
+        if let Some(f) = model.update(&i) {
             let tx = tx.clone();
             std::thread::spawn(move || tx.send(f()));
         }
@@ -85,5 +86,11 @@ pub fn run<E: Event + std::marker::Send + 'static, M: Model<E>>(
         )
         .unwrap();
         stdout.flush().unwrap();
+        if let Some(x) = i.to_system_event() {
+            match x {
+                SystemEvent::Quit => break,
+                _ => (),
+            }
+        }
     }
 }
