@@ -32,8 +32,17 @@ fn watch_keys<E: Event>(tx: mpsc::Sender<E>) {
     }
 }
 
-pub fn run<E: Event + std::marker::Send + 'static, M: Model<E>>(
-    model: &mut M,
-    cmd: Option<fn() -> E>,
-) {
+fn watch_resize<E: Event>(tx: mpsc::Sender<E>) {
+    let (mut ow, mut oh) = termion::terminal_size().unwrap();
+    tx.send(E::from_system_event(SystemEvent::WindowResize(ow, oh)))
+        .unwrap();
+    loop {
+        std::thread::sleep(std::time::Duration::new(0, 500000000));
+        let (nw, nh) = termion::terminal_size().unwrap();
+        if nw != ow || nh != oh {
+            tx.send(E::from_system_event(SystemEvent::WindowResize(ow, oh)))
+                .unwrap();
+            (ow, oh) = (ow, oh)
+        }
+    }
 }
