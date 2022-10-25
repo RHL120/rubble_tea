@@ -46,7 +46,7 @@ fn watch_resize<E: Event>(tx: mpsc::Sender<E>) {
         std::thread::sleep(std::time::Duration::new(0, 500000000));
         let (nw, nh) = termion::terminal_size().unwrap();
         if nw != ow || nh != oh {
-            tx.send(E::from_system_event(SystemEvent::WindowResize(ow, oh)))
+            tx.send(E::from_system_event(SystemEvent::WindowResize(nw, nh)))
                 .unwrap();
             (ow, oh) = (ow, oh)
         }
