@@ -1,44 +1,84 @@
-pub mod events;
+use std::io::{stdin, stdout, Write};
 use std::sync::mpsc;
+use termion::input::TermRead;
+use termion::raw::IntoRawMode;
 
-pub trait Model<E: events::Event> {
+pub use termion::event::Key;
+pub enum SystemEvent {
+    KeyPress(Key),
+    WindowResize(u16, u16),
+}
+
+pub trait Event {
+    fn from_system_event(se: SystemEvent) -> Self;
+}
+
+pub trait Model<E: Event> {
     fn update(&mut self, e: E) -> Option<fn() -> E>;
     fn view(&self) -> String;
 }
 
-pub fn run<E: events::Event + std::marker::Send + 'static, M: Model<E>>(
+impl Event for SystemEvent {
+    fn from_system_event(se: SystemEvent) -> Self {
+        se
+    }
+}
+
+fn watch_keys<E: Event>(tx: mpsc::Sender<E>) {
+    let stdin = stdin();
+    for i in stdin.keys() {
+        tx.send(E::from_system_event(SystemEvent::KeyPress(i.unwrap())))
+            .unwrap();
+    }
+}
+
+fn watch_resize<E: Event>(tx: mpsc::Sender<E>) {
+    let (mut ow, mut oh) = termion::terminal_size().unwrap();
+    tx.send(E::from_system_event(SystemEvent::WindowResize(ow, oh)))
+        .unwrap();
+    loop {
+        std::thread::sleep(std::time::Duration::new(0, 500000000));
+        let (nw, nh) = termion::terminal_size().unwrap();
+        if nw != ow || nh != oh {
+            tx.send(E::from_system_event(SystemEvent::WindowResize(ow, oh)))
+                .unwrap();
+            (ow, oh) = (ow, oh)
+        }
+    }
+}
+
+pub fn run<E: Event + std::marker::Send + 'static, M: Model<E>>(
     model: &mut M,
     cmd: Option<fn() -> E>,
 ) {
-    ncurses::initscr();
-    ncurses::raw();
-    ncurses::keypad(ncurses::stdscr(), true);
-    ncurses::noecho();
+    let mut stdout = stdout().into_raw_mode().unwrap();
     let (tx, rx): (mpsc::Sender<E>, mpsc::Receiver<E>) = mpsc::channel();
     {
         let tx = tx.clone();
-        std::thread::spawn(move || events::watch_key(tx));
+        std::thread::spawn(move || watch_keys(tx));
     }
     {
         let tx = tx.clone();
-        std::thread::spawn(move || events::watch_size_change(tx));
+        std::thread::spawn(move || watch_resize(tx));
     }
     if let Some(f) = cmd {
         let tx = tx.clone();
-        std::thread::spawn(move || tx.send(f()).unwrap());
+        std::thread::spawn(move || tx.send(f()));
     }
-    loop {
-        ncurses::clear();
-        ncurses::addstr(model.view().as_str());
-        ncurses::refresh();
-        for i in rx.iter() {
-            ncurses::clear();
-            ncurses::addstr(model.view().as_str());
-            ncurses::refresh();
-            if let Some(f) = model.update(i) {
-                let tx = tx.clone();
-                std::thread::spawn(move || tx.send(f()).unwrap());
-            }
+    //We are guaranteed to recive at least one event on startup (the resize event)
+    for i in rx.iter() {
+        if let Some(f) = model.update(i) {
+            let tx = tx.clone();
+            std::thread::spawn(move || tx.send(f()));
         }
+        write!(
+            stdout,
+            "{}{}{}",
+            termion::clear::All,
+            termion::cursor::Goto(1, 1),
+            model.view()
+        )
+        .unwrap();
+        stdout.flush().unwrap();
     }
 }
