@@ -71,6 +71,14 @@ pub fn run<E: Event + std::marker::Send + 'static, M: Model<E>>(
             let tx = tx.clone();
             std::thread::spawn(move || tx.send(f()));
         }
-        write!(stdout, "{}{}", termion::clear::All, model.view()).unwrap();
+        write!(
+            stdout,
+            "{}{}{}",
+            termion::clear::All,
+            termion::cursor::Goto(1, 1),
+            model.view()
+        )
+        .unwrap();
+        stdout.flush().unwrap();
     }
 }
