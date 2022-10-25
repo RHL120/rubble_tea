@@ -5,12 +5,19 @@ use termion::raw::IntoRawMode;
 
 pub use termion::event::Key;
 #[derive(Clone)]
+///System events are the set of events that all models should support
 pub enum SystemEvent {
+    ///When a key has been pressed
     KeyPress(Key),
+    ///When the window has been resized
     WindowResize(u16, u16),
+    ///This causes the main loop to break, usually emmited from update.
     Quit,
 }
 
+///This trait allows the user to create custom events.
+///*SystemEvent* implements this trait meaning that if the programer is content
+///with the default events, they don't have to create their own wrapper.
 pub trait Event {
     fn from_system_event(se: SystemEvent) -> Self;
     fn to_system_event(&self) -> Option<SystemEvent>;
@@ -53,6 +60,7 @@ fn watch_resize<E: Event>(tx: mpsc::Sender<E>) {
     }
 }
 
+///Starts the event listeners and the main program loop
 pub fn run<E: Event + std::marker::Send + 'static, M: Model<E>>(
     model: &mut M,
     cmd: Option<fn() -> E>,
