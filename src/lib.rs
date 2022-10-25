@@ -1,7 +1,12 @@
+use std::io::{stdin, stdout, Write};
+use std::sync::mpsc;
+use termion::input::TermRead;
+use termion::raw::IntoRawMode;
+
 pub use termion::event::Key;
 pub enum SystemEvent {
     KeyPress(Key),
-    WindowResize(u8, u8),
+    WindowResize(u16, u16),
 }
 
 pub trait Event {
@@ -18,6 +23,15 @@ impl Event for SystemEvent {
         se
     }
 }
+
+fn watch_keys<E: Event>(tx: mpsc::Sender<E>) {
+    let stdin = stdin();
+    for i in stdin.keys() {
+        tx.send(E::from_system_event(SystemEvent::KeyPress(i.unwrap())))
+            .unwrap();
+    }
+}
+
 pub fn run<E: Event + std::marker::Send + 'static, M: Model<E>>(
     model: &mut M,
     cmd: Option<fn() -> E>,
