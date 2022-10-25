@@ -46,3 +46,23 @@ fn watch_resize<E: Event>(tx: mpsc::Sender<E>) {
         }
     }
 }
+
+pub fn run<E: Event + std::marker::Send + 'static, M: Model<E>>(
+    model: &mut M,
+    cmd: Option<fn() -> E>,
+) {
+    let mut stdout = stdout().into_raw_mode().unwrap();
+    let (tx, rx): (mpsc::Sender<E>, mpsc::Receiver<E>) = mpsc::channel();
+    {
+        let tx = tx.clone();
+        std::thread::spawn(move || watch_keys(tx));
+    }
+    {
+        let tx = tx.clone();
+        std::thread::spawn(move || watch_resize(tx));
+    }
+    if let Some(f) = cmd {
+        let tx = tx.clone();
+        std::thread::spawn(move || tx.send(f()));
+    }
+}
