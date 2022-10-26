@@ -159,9 +159,10 @@ impl StyleSheet {
         self.0.push(s);
         self
     }
-    pub fn render<D: std::fmt::Display>(StyleSheet(sheet): &Self, d: D) -> String {
+    pub fn render<D: std::fmt::Display>(&self, d: D) -> String {
         let mut end = String::new();
         let mut ret = String::new();
+        let StyleSheet(sheet) = self;
         for i in sheet {
             if let Style::TextStyle(_) = i {
                 end = format!("{}", termion::style::Reset);
@@ -173,5 +174,75 @@ impl StyleSheet {
             ret = format!("{}{}", ret, i);
         }
         format!("{}{}{}", ret, d, end)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+
+    #[test]
+    fn style_bold() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::TextStyle(TextStyle::Bold))
+                .render("hello"),
+            "\u{1b}[1mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn style_faint() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::TextStyle(TextStyle::Faint))
+                .render("hello"),
+            "\u{1b}[2mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn style_italic() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::TextStyle(TextStyle::Italic))
+                .render("hello"),
+            "\u{1b}[3mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn style_underline() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::TextStyle(TextStyle::Underline))
+                .render("hello"),
+            "\u{1b}[4mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn style_blink() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::TextStyle(TextStyle::Blink))
+                .render("hello"),
+            "\u{1b}[5mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn style_invert() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::TextStyle(TextStyle::Invert))
+                .render("hello"),
+            "\u{1b}[7mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn style_strike_through() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::TextStyle(TextStyle::Invert))
+                .render("hello"),
+            "\u{1b}[7mhello\u{1b}[m"
+        );
     }
 }
