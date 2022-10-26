@@ -534,4 +534,14 @@ mod tests {
             "\u{1b}[38;5;15mhello\u{1b}[m"
         );
     }
+
+    #[test]
+    fn position_abs() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::Position(Position::Absolute(5, 5)))
+                .render("hello"),
+            "\u{1b}[6;6Hhello"
+        );
+    }
 }
