@@ -245,4 +245,148 @@ mod tests {
             "\u{1b}[7mhello\u{1b}[m"
         );
     }
+    #[test]
+    fn bg_color_black() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::BackgroundColor(Color::Black))
+                .render("hello"),
+            "\u{1b}[48;5;0mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn bg_color_red() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::BackgroundColor(Color::Red))
+                .render("hello"),
+            "\u{1b}[48;5;1mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn bg_color_green() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::BackgroundColor(Color::Green))
+                .render("hello"),
+            "\u{1b}[48;5;2mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn bg_color_yellow() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::BackgroundColor(Color::Yellow))
+                .render("hello"),
+            "\u{1b}[48;5;3mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn bg_color_blue() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::BackgroundColor(Color::Blue))
+                .render("hello"),
+            "\u{1b}[48;5;4mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn bg_color_magenta() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::BackgroundColor(Color::Magenta))
+                .render("hello"),
+            "\u{1b}[48;5;5mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn bg_color_cyan() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::BackgroundColor(Color::Cyan))
+                .render("hello"),
+            "\u{1b}[48;5;6mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn bg_color_white() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::BackgroundColor(Color::White))
+                .render("hello"),
+            "\u{1b}[48;5;7mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn bg_color_light_black() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::BackgroundColor(Color::LightBlack))
+                .render("hello"),
+            "\u{1b}[48;5;8mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn bg_color_light_red() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::BackgroundColor(Color::LightRed))
+                .render("hello"),
+            "\u{1b}[48;5;9mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn bg_color_light_green() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::BackgroundColor(Color::LightGreen))
+                .render("hello"),
+            "\u{1b}[48;5;10mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn bg_color_light_yellow() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::BackgroundColor(Color::LightYellow))
+                .render("hello"),
+            "\u{1b}[48;5;11mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn bg_color_light_blue() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::BackgroundColor(Color::LightBlue))
+                .render("hello"),
+            "\u{1b}[48;5;12mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn bg_color_light_magenta() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::BackgroundColor(Color::LightMagenta))
+                .render("hello"),
+            "\u{1b}[48;5;13mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn bg_color_light_cyan() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::BackgroundColor(Color::LightCyan))
+                .render("hello"),
+            "\u{1b}[48;5;14mhello\u{1b}[m"
+        );
+    }
+    #[test]
+    fn bg_color_light_white() {
+        assert_eq!(
+            StyleSheet::new()
+                .add(Style::BackgroundColor(Color::LightWhite))
+                .render("hello"),
+            "\u{1b}[48;5;15mhello\u{1b}[m"
+        );
+    }
 }
