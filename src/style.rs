@@ -40,20 +40,11 @@ pub enum Position {
 }
 
 #[derive(Eq, PartialEq)]
-pub enum Border {
-    Top,
-    Left,
-    Right,
-    Bottom,
-}
-
-#[derive(Eq, PartialEq)]
 pub enum Style {
     TextStyle(TextStyle),
     TextColor(Color),
     BackgroundColor(Color),
     Position(Position),
-    Border(Border),
 }
 
 pub struct StyleSheet(Vec<Style>);
@@ -146,7 +137,6 @@ impl std::fmt::Display for Style {
                     write!(f, "{}", termion::cursor::Goto(w, h))
                 }
             },
-            Style::Border(_) => todo!(),
         }
     }
 }
