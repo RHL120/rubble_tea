@@ -5,6 +5,7 @@ use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
 pub use termion::event::Key;
+pub use termion::terminal_size;
 #[derive(Clone)]
 ///System events are the set of events that all models should support
 pub enum SystemEvent {

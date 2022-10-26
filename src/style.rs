@@ -172,6 +172,6 @@ impl StyleSheet {
             }
             ret = format!("{}{}", ret, i);
         }
-        format!("{}{}", ret, end)
+        format!("{}{}{}", ret, d, end)
     }
 }
