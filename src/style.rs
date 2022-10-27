@@ -1,4 +1,5 @@
 #[derive(Eq, PartialEq)]
+/// They way the text should be displayed
 pub enum TextStyle {
     Bold,
     Faint,
@@ -10,6 +11,7 @@ pub enum TextStyle {
 }
 
 #[derive(Eq, PartialEq)]
+///The color to be printed
 pub enum Color {
     Black,
     Red,
@@ -31,6 +33,7 @@ pub enum Color {
 
 #[derive(Eq, PartialEq)]
 pub enum Position {
+    ///Zero indexed position
     Absolute(u16, u16),
     Center,
     TopLeft,
@@ -40,13 +43,19 @@ pub enum Position {
 }
 
 #[derive(Eq, PartialEq)]
+///Combination of all styles structures
 pub enum Style {
+    /// The style of the text
     TextStyle(TextStyle),
+    /// The color of the text
     TextColor(Color),
+    /// The background color
     BackgroundColor(Color),
+    /// The position of the text
     Position(Position),
 }
 
+/// A list of styles
 pub struct StyleSheet(Vec<Style>);
 
 impl std::fmt::Display for Style {
@@ -142,13 +151,16 @@ impl std::fmt::Display for Style {
 }
 
 impl StyleSheet {
+    /// Create an empty stylesheet
     pub fn new() -> Self {
         StyleSheet(Vec::new())
     }
+    /// Add another style to the style sheet
     pub fn add(mut self, s: Style) -> StyleSheet {
         self.0.push(s);
         self
     }
+    /// Apply the given stylesheet onto the given object
     pub fn render<D: std::fmt::Display>(&self, d: D) -> String {
         let mut end = String::new();
         let mut ret = String::new();
