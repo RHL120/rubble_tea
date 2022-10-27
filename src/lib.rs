@@ -26,7 +26,7 @@ pub trait Event {
 }
 
 pub trait Model<E: Event> {
-    fn update(&mut self, e: &E) -> Option<fn() -> E>;
+    fn update(&mut self, e: &E) -> Option<Box<dyn FnOnce() -> E + Send + 'static>>;
     fn view(&self) -> String;
 }
 
@@ -63,9 +63,13 @@ fn watch_resize<E: Event>(tx: mpsc::Sender<E>) {
 }
 
 ///Starts the event listeners and the main program loop
-pub fn run<E: Event + std::marker::Send + 'static, M: Model<E>>(
+pub fn run<
+    E: Event + std::marker::Send + 'static,
+    F: FnOnce() -> E + std::marker::Send + 'static,
+    M: Model<E>,
+>(
     model: &mut M,
-    cmd: Option<fn() -> E>,
+    cmd: Option<F>,
 ) {
     let mut stdout = stdout().into_raw_mode().unwrap();
     let (tx, rx): (mpsc::Sender<E>, mpsc::Receiver<E>) = mpsc::channel();
