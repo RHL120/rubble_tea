@@ -5,12 +5,19 @@ use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
 pub use termion::event::Key;
+pub use termion::event::MouseButton;
 pub use termion::terminal_size;
 #[derive(Clone)]
 ///System events are the set of events that all models should support
 pub enum SystemEvent {
     ///When a key has been pressed
     KeyPress(Key),
+    /// A mouse button was pressed.
+    MousePress(MouseButton, u16, u16),
+    /// A mouse button was released.
+    MouseRelease(u16, u16),
+    /// A mouse button is held over the given coordinates.
+    MouseHold(u16, u16),
     ///When the window has been resized
     WindowResize(u16, u16),
     ///This causes the main loop to break, usually emmited from update.
