@@ -46,11 +46,23 @@ impl Event for SystemEvent {
     }
 }
 
-fn watch_keys<E: Event>(tx: mpsc::Sender<E>) {
+fn watch_input<E: Event>(tx: mpsc::Sender<E>) {
     let stdin = stdin();
-    for i in stdin.keys() {
-        tx.send(E::from_system_event(SystemEvent::KeyPress(i.unwrap())))
-            .unwrap();
+    for i in stdin.events() {
+        tx.send(E::from_system_event(match i.unwrap() {
+            termion::event::Event::Mouse(me) => match me {
+                termion::event::MouseEvent::Press(k, x, y) => {
+                    SystemEvent::MousePress(k, x - 1, y - 1)
+                }
+                termion::event::MouseEvent::Release(x, y) => {
+                    SystemEvent::MouseRelease(x - 1, y - 1)
+                }
+                termion::event::MouseEvent::Hold(x, y) => SystemEvent::MouseHold(x - 1, y - 1),
+            },
+            termion::event::Event::Key(k) => SystemEvent::KeyPress(k),
+            termion::event::Event::Unsupported(_) => continue,
+        }))
+        .unwrap();
     }
 }
 
@@ -70,19 +82,15 @@ fn watch_resize<E: Event>(tx: mpsc::Sender<E>) {
 }
 
 ///Starts the event listeners and the main program loop
-pub fn run<
-    E: Event + std::marker::Send + 'static,
-    F: FnOnce() -> E + std::marker::Send + 'static,
-    M: Model<E>,
->(
+pub fn run<E: Event + std::marker::Send + 'static, M: Model<E>>(
     model: &mut M,
-    cmd: Option<F>,
+    cmd: Option<Box<dyn FnOnce() -> E + Send + 'static>>,
 ) {
-    let mut stdout = stdout().into_raw_mode().unwrap();
+    let mut stdout = termion::input::MouseTerminal::from(stdout().into_raw_mode().unwrap());
     let (tx, rx): (mpsc::Sender<E>, mpsc::Receiver<E>) = mpsc::channel();
     {
         let tx = tx.clone();
-        std::thread::spawn(move || watch_keys(tx));
+        std::thread::spawn(move || watch_input(tx));
     }
     {
         let tx = tx.clone();
