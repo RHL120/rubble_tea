@@ -1,4 +1,5 @@
 pub mod style;
+pub mod widgets;
 use std::io::{stdin, stdout, Write};
 use std::sync::mpsc;
 use termion::input::TermRead;
