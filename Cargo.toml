@@ -9,4 +9,4 @@ description = "A tui library that follows the MVC pattern"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-termion = "2.0.1"
+termion = "3.0.0"
