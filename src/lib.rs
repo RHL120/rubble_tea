@@ -10,6 +10,7 @@ pub use termion::event::MouseButton;
 pub use termion::terminal_size;
 #[derive(Clone)]
 ///System events are the set of events that all models should support
+#[derive(Eq, PartialEq)]
 pub enum SystemEvent {
     ///When a key has been pressed
     KeyPress(Key),
@@ -28,7 +29,7 @@ pub enum SystemEvent {
 ///This trait allows the user to create custom events.
 ///*SystemEvent* implements this trait meaning that if the programer is content
 ///with the default events, they don't have to create their own wrapper.
-pub trait Event {
+pub trait Event: Eq {
     fn from_system_event(se: SystemEvent) -> Self;
     fn to_system_event(&self) -> Option<SystemEvent>;
 }
