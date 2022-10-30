@@ -1,6 +1,6 @@
 [package]
 name = "rubble_tea"
-version = "1.0.0"
+version = "3.0.0"
 edition = "2021"
 license="GPL-3.0-or-later"
 authors = ["RHL120 <rhl120@protonmail.com>"]
@@ -9,4 +9,4 @@ description = "A tui library that follows the MVC pattern"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-termion = "3.0.0"
+termion = "2.0.1"
