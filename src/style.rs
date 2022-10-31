@@ -1,4 +1,4 @@
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Clone)]
 /// They way the text should be displayed
 pub enum TextStyle {
     Bold,
@@ -10,7 +10,7 @@ pub enum TextStyle {
     StrikeThrough,
 }
 
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Clone)]
 ///The color to be printed
 pub enum Color {
     Black,
@@ -31,7 +31,7 @@ pub enum Color {
     LightWhite,
 }
 
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Clone)]
 pub enum Position {
     ///Zero indexed position
     Absolute(u16, u16),
@@ -42,7 +42,7 @@ pub enum Position {
     BottomRight,
 }
 
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Clone)]
 ///Combination of all styles structures
 pub enum Style {
     /// The style of the text
