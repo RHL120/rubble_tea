@@ -146,6 +146,7 @@ impl<E: crate::Event + Send + 'static> Timer<E> {
         update_event: E,
         time: f64,
     ) -> Self {
+        let time = (time * 100.0).round() / 100.0;
         Timer {
             completed_event,
             pause_event,
@@ -189,6 +190,6 @@ impl<E: crate::Event + Send + 'static> Widget<E> for Timer<E> {
         }
     }
     fn view(&self) -> String {
-        format!("{}", self.time)
+        format!("{:.2}", self.time)
     }
 }
