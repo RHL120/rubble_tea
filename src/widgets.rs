@@ -196,15 +196,21 @@ impl<E: crate::Event + Send + 'static> Widget<E> for Timer<E> {
     }
 }
 
+//The structure representation of a stop watch
 pub struct StopWatch<E: crate::Event + Send + 'static> {
     resume_event: E,
     pause_event: E,
     update_event: E,
     paused: bool,
+    ///The amount of seconds the stopwatch has been running
     pub time: f32,
 }
 
 impl<E: crate::Event + Send + 'static> StopWatch<E> {
+    ///Creates a new stop watch with
+    ///*pause_event* being the event that pauses the stopwatch
+    ///*resume_event* being the event that resumes the stopwatch
+    ///*update_event* being the event that updates the stopwatch
     pub fn new(pause_event: E, resume_event: E, update_event: E) -> Self {
         StopWatch {
             pause_event,
