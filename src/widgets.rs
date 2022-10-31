@@ -18,6 +18,10 @@ pub struct Spinner<E: crate::Event + Send + 'static> {
 }
 
 impl<E: crate::Event + Send + 'static> Spinner<E> {
+    //Create a new spinner structure
+    //*update_event* is the event the will be sent and received on updates
+    //*pause_event* is the event the will be received on pause
+    //*resume_event* is the event the will be received on resume
     pub fn new(update_event: E, pause_event: E, resume_event: E) -> Self {
         Spinner {
             update_event,
@@ -60,6 +64,7 @@ impl<E: crate::Event + Send + 'static> Widget<E> for Spinner<E> {
     }
 }
 
+///The structure representation of a progress bar
 pub struct ProgressBar<E: crate::Event + Send + 'static> {
     add: E,
     take: E,
@@ -69,6 +74,10 @@ pub struct ProgressBar<E: crate::Event + Send + 'static> {
 }
 
 impl<E: crate::Event + Send + 'static> ProgressBar<E> {
+    ///Crates a new progress bar with
+    ///*add* being the event received when the progress bar increments
+    ///*take* being the event received when the progress bar decrements
+    ///*n_elements* being the number of elements to be processed.
     pub fn new(add: E, take: E, color: crate::style::Color, n_elements: usize) -> Self {
         ProgressBar {
             add,
@@ -113,15 +122,23 @@ impl<E: crate::Event + Send + 'static> Widget<E> for ProgressBar<E> {
     }
 }
 
+///The structure representation of a timer
 pub struct Timer<E: crate::Event + Send + 'static> {
     completed_event: E,
     pause_event: E,
     resume_event: E,
     update_event: E,
     paused: bool,
+    ///The amount of time in seconds left for the timer to finish
     pub time: f64,
 }
 impl<E: crate::Event + Send + 'static> Timer<E> {
+    ///Create a new timer with
+    ///*completed_event* being the event to emmit when the timer is finished
+    ///*pause_event* being the event that the timer receives to pause
+    ///*resume_event* being the event that the timer receives to resume
+    ///*update_event* being the event that the timer receives to update
+    ///*time* the amount of time in seconds for the timer to finish
     pub fn new(
         completed_event: E,
         pause_event: E,
