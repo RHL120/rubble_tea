@@ -27,7 +27,7 @@ impl<E: crate::Event + Send + 'static> Spinner<E> {
             update_event,
             pause_event,
             resume_event,
-            paused: false,
+            paused: true,
             idx: 0,
         }
     }
@@ -50,7 +50,8 @@ impl<E: crate::Event + Send + 'static> Widget<E> for Spinner<E> {
         if self.update_event == e && !self.paused {
             self.idx = (self.idx + 1) % SPINNER_FRAMES.len();
             Some(updater)
-        } else if self.resume_event == e {
+        } else if self.resume_event == e && self.paused {
+            self.paused = false;
             Some(updater)
         } else {
             if self.pause_event == e {
@@ -130,7 +131,7 @@ pub struct Timer<E: crate::Event + Send + 'static> {
     update_event: E,
     paused: bool,
     ///The amount of time in seconds left for the timer to finish
-    pub time: f64,
+    pub time: f32,
 }
 impl<E: crate::Event + Send + 'static> Timer<E> {
     ///Create a new timer with
@@ -144,7 +145,7 @@ impl<E: crate::Event + Send + 'static> Timer<E> {
         pause_event: E,
         resume_event: E,
         update_event: E,
-        time: f64,
+        time: f32,
     ) -> Self {
         let time = (time * 100.0).round() / 100.0;
         Timer {
@@ -153,13 +154,13 @@ impl<E: crate::Event + Send + 'static> Timer<E> {
             resume_event,
             update_event,
             time,
-            paused: false,
+            paused: true,
         }
     }
 }
 impl<E: crate::Event + Send + 'static> Widget<E> for Timer<E> {
     fn init(&mut self) -> Option<Box<dyn FnOnce() -> E + Send + 'static>> {
-        let ns = self.update_event.clone();
+        let ns = self.resume_event.clone();
         Some(Box::new(|| {
             std::thread::sleep(std::time::Duration::new(0, 10000000));
             ns
@@ -168,7 +169,7 @@ impl<E: crate::Event + Send + 'static> Widget<E> for Timer<E> {
     fn update(&mut self, e: &E) -> Option<Box<dyn FnOnce() -> E + Send + 'static>> {
         let e = e.clone();
         if e == self.update_event && self.time > 0.0 && !self.paused {
-            self.time -= 0.01;
+            self.time = ((self.time - 0.01) * 100.0).round() / 100.0;
             Some(if self.time == 0.0 {
                 let e = self.completed_event.clone();
                 Box::new(move || e)
@@ -182,8 +183,58 @@ impl<E: crate::Event + Send + 'static> Widget<E> for Timer<E> {
         } else if e == self.pause_event {
             self.paused = true;
             None
-        } else if e == self.resume_event {
+        } else if e == self.resume_event && self.paused {
+            self.paused = false;
             let e = self.update_event.clone();
+            Some(Box::new(move || e))
+        } else {
+            None
+        }
+    }
+    fn view(&self) -> String {
+        format!("{:.2}", self.time)
+    }
+}
+
+pub struct StopWatch<E: crate::Event + Send + 'static> {
+    resume_event: E,
+    pause_event: E,
+    update_event: E,
+    paused: bool,
+    pub time: f32,
+}
+
+impl<E: crate::Event + Send + 'static> StopWatch<E> {
+    pub fn new(pause_event: E, resume_event: E, update_event: E) -> Self {
+        StopWatch {
+            pause_event,
+            resume_event,
+            update_event,
+            time: 0.0,
+            paused: true,
+        }
+    }
+}
+
+impl<E: crate::Event + Send + 'static> Widget<E> for StopWatch<E> {
+    fn init(&mut self) -> Option<Box<dyn FnOnce() -> E + Send + 'static>> {
+        let ns = self.resume_event.clone();
+        Some(Box::new(|| ns))
+    }
+    fn update(&mut self, e: &E) -> Option<Box<dyn FnOnce() -> E + Send + 'static>> {
+        let e = e.clone();
+        if e == self.update_event && !self.paused {
+            self.time = ((self.time + 0.01) * 100.0).round() / 100.0;
+            Some(Box::new(|| {
+                std::thread::sleep(std::time::Duration::new(0, 10000000));
+                e
+            }))
+        } else if e == self.pause_event {
+            self.paused = true;
+            None
+        } else if e == self.resume_event && self.paused {
+            let e = self.update_event.clone();
+            self.paused = false;
             Some(Box::new(move || e))
         } else {
             None
