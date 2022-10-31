@@ -112,3 +112,66 @@ impl<E: crate::Event + Send + 'static> Widget<E> for ProgressBar<E> {
         )
     }
 }
+
+pub struct Timer<E: crate::Event + Send + 'static> {
+    completed_event: E,
+    pause_event: E,
+    resume_event: E,
+    update_event: E,
+    paused: bool,
+    pub time: f64,
+}
+impl<E: crate::Event + Send + 'static> Timer<E> {
+    pub fn new(
+        completed_event: E,
+        pause_event: E,
+        resume_event: E,
+        update_event: E,
+        time: f64,
+    ) -> Self {
+        Timer {
+            completed_event,
+            pause_event,
+            resume_event,
+            update_event,
+            time,
+            paused: false,
+        }
+    }
+}
+impl<E: crate::Event + Send + 'static> Widget<E> for Timer<E> {
+    fn init(&mut self) -> Option<Box<dyn FnOnce() -> E + Send + 'static>> {
+        let ns = self.update_event.clone();
+        Some(Box::new(|| {
+            std::thread::sleep(std::time::Duration::new(0, 10000000));
+            ns
+        }))
+    }
+    fn update(&mut self, e: &E) -> Option<Box<dyn FnOnce() -> E + Send + 'static>> {
+        let e = e.clone();
+        if e == self.update_event && self.time > 0.0 && !self.paused {
+            self.time -= 0.01;
+            Some(if self.time == 0.0 {
+                let e = self.completed_event.clone();
+                Box::new(move || e)
+            } else {
+                let e = self.update_event.clone();
+                Box::new(move || {
+                    std::thread::sleep(std::time::Duration::new(0, 10000000));
+                    e
+                })
+            })
+        } else if e == self.pause_event {
+            self.paused = true;
+            None
+        } else if e == self.resume_event {
+            let e = self.update_event.clone();
+            Some(Box::new(move || e))
+        } else {
+            None
+        }
+    }
+    fn view(&self) -> String {
+        format!("{}", self.time)
+    }
+}
