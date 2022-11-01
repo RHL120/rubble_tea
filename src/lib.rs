@@ -85,7 +85,7 @@ fn watch_resize<E: Event>(tx: mpsc::Sender<E>) {
 ///Starts the event listeners and the main program loop
 pub fn run<E: Event + std::marker::Send + 'static, M: Model<E>>(
     model: &mut M,
-    cmd: Option<Box<dyn FnOnce() -> E + Send + 'static>>,
+    cmds: Vec<Box<dyn FnOnce() -> E + Send + 'static>>,
 ) {
     let mut stdout = termion::input::MouseTerminal::from(stdout().into_raw_mode().unwrap());
     let (tx, rx): (mpsc::Sender<E>, mpsc::Receiver<E>) = mpsc::channel();
@@ -97,9 +97,9 @@ pub fn run<E: Event + std::marker::Send + 'static, M: Model<E>>(
         let tx = tx.clone();
         std::thread::spawn(move || watch_resize(tx));
     }
-    if let Some(f) = cmd {
+    for c in cmds {
         let tx = tx.clone();
-        std::thread::spawn(move || tx.send(f()));
+        std::thread::spawn(move || tx.send(c()));
     }
     //We are guaranteed to recive at least one event on startup (the resize event)
     for i in rx.iter() {
