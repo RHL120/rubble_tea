@@ -2,7 +2,7 @@
 name = "rubble_tea"
 version = "4.1.0"
 edition = "2021"
-license-file = "./LICENSE"
+license="GPL-3.0-or-later"
 authors = ["RHL120 <rhl120@protonmail.com>"]
 description = "A tui library that follows the MVC pattern"
 readme = "README.md"

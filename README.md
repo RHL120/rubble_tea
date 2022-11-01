@@ -43,7 +43,7 @@ impl Event for MyEvent {
 The `Model` trait consists of 2 methods:
 ```rust
 pub trait Model<E: Event> {
-    fn update(&mut self, e: &E) -> Option<Box<dyn FnOnce() -> E + Send + 'static>>;
+    fn update(&mut self, e: &E) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>>;
     fn view(&self) -> String;
 }
 ```
@@ -59,16 +59,16 @@ impl Model<SystemEvent> for MyModel {
     fn update(
         &mut self,
         e: &SystemEvent,
-    ) -> Option<Box<dyn FnOnce() -> SystemEvent + Send + 'static>> {
+    ) -> Vec<Box<dyn FnOnce() -> SystemEvent + Send + 'static>> {
         match e {
             SystemEvent::KeyPress(Key::Char('+')) => self.0 += 1,
             SystemEvent::KeyPress(Key::Char('-')) => self.0 -= 1,
             _ => (),
         };
         if self.0 < 0 || self.0 > 100 {
-            Some(Box::new(|| SystemEvent::Quit))
+            vec![Box::new(|| SystemEvent::Quit)]
         } else {
-            None
+            vec![]
         }
     }
     fn view(&self) -> String {

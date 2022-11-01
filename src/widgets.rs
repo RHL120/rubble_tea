@@ -1,9 +1,9 @@
 ///The trait that all widgets must implement
 pub trait Widget<E: crate::Event + Send> {
-    ///Sets up the widget and returns an initial event
-    fn init(&mut self) -> Option<Box<dyn FnOnce() -> E + Send + 'static>>;
-    ///Handles an event and returns another one
-    fn update(&mut self, e: &E) -> Option<Box<dyn FnOnce() -> E + Send + 'static>>;
+    ///Sets up the widget and returns the initial events
+    fn init(&mut self) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>>;
+    ///Handles an event and returns a set of events
+    fn update(&mut self, e: &E) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>>;
     ///Returns the string representation of a widget
     fn view(&self) -> String;
 }
@@ -36,11 +36,11 @@ impl<E: crate::Event + Send + 'static> Spinner<E> {
 const SPINNER_FRAMES: [&str; 8] = ["⣾ ", "⣽ ", "⣻ ", "⢿ ", "⡿ ", "⣟ ", "⣯ ", "⣷ "];
 
 impl<E: crate::Event + Send + 'static> Widget<E> for Spinner<E> {
-    fn init(&mut self) -> Option<Box<dyn FnOnce() -> E + Send + 'static>> {
+    fn init(&mut self) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>> {
         let e = self.resume_event.clone();
-        Some(Box::new(move || e))
+        vec![Box::new(move || e)]
     }
-    fn update(&mut self, e: &E) -> Option<Box<dyn FnOnce() -> E + Send + 'static>> {
+    fn update(&mut self, e: &E) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>> {
         let e = e.clone();
         let update = self.update_event.clone();
         let updater = Box::new(|| {
@@ -49,15 +49,15 @@ impl<E: crate::Event + Send + 'static> Widget<E> for Spinner<E> {
         });
         if self.update_event == e && !self.paused {
             self.idx = (self.idx + 1) % SPINNER_FRAMES.len();
-            Some(updater)
+            vec![updater]
         } else if self.resume_event == e && self.paused {
             self.paused = false;
-            Some(updater)
+            vec![updater]
         } else {
             if self.pause_event == e {
                 self.paused = true;
             }
-            None
+            vec![]
         }
     }
     fn view(&self) -> String {
@@ -90,17 +90,17 @@ impl<E: crate::Event + Send + 'static> ProgressBar<E> {
     }
 }
 impl<E: crate::Event + Send + 'static> Widget<E> for ProgressBar<E> {
-    fn init(&mut self) -> Option<Box<dyn FnOnce() -> E + Send + 'static>> {
-        None
+    fn init(&mut self) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>> {
+        vec![]
     }
-    fn update(&mut self, e: &E) -> Option<Box<dyn FnOnce() -> E + Send + 'static>> {
+    fn update(&mut self, e: &E) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>> {
         let e = e.clone();
         if e == self.add && self.idx < self.n_elements {
             self.idx += 1;
         } else if e == self.take && self.idx > 0 {
             self.idx -= 1;
         }
-        None
+        vec![]
     }
     fn view(&self) -> String {
         use crate::style::*;
@@ -159,18 +159,18 @@ impl<E: crate::Event + Send + 'static> Timer<E> {
     }
 }
 impl<E: crate::Event + Send + 'static> Widget<E> for Timer<E> {
-    fn init(&mut self) -> Option<Box<dyn FnOnce() -> E + Send + 'static>> {
+    fn init(&mut self) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>> {
         let ns = self.resume_event.clone();
-        Some(Box::new(|| {
+        vec![Box::new(|| {
             std::thread::sleep(std::time::Duration::new(0, 10000000));
             ns
-        }))
+        })]
     }
-    fn update(&mut self, e: &E) -> Option<Box<dyn FnOnce() -> E + Send + 'static>> {
+    fn update(&mut self, e: &E) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>> {
         let e = e.clone();
         if e == self.update_event && self.time > 0.0 && !self.paused {
             self.time = ((self.time - 0.01) * 100.0).round() / 100.0;
-            Some(if self.time == 0.0 {
+            vec![if self.time == 0.0 {
                 let e = self.completed_event.clone();
                 Box::new(move || e)
             } else {
@@ -179,16 +179,16 @@ impl<E: crate::Event + Send + 'static> Widget<E> for Timer<E> {
                     std::thread::sleep(std::time::Duration::new(0, 10000000));
                     e
                 })
-            })
+            }]
         } else if e == self.pause_event {
             self.paused = true;
-            None
+            vec![]
         } else if e == self.resume_event && self.paused {
             self.paused = false;
             let e = self.update_event.clone();
-            Some(Box::new(move || e))
+            vec![Box::new(move || e)]
         } else {
-            None
+            vec![Box::new(move || e)]
         }
     }
     fn view(&self) -> String {
@@ -223,27 +223,27 @@ impl<E: crate::Event + Send + 'static> StopWatch<E> {
 }
 
 impl<E: crate::Event + Send + 'static> Widget<E> for StopWatch<E> {
-    fn init(&mut self) -> Option<Box<dyn FnOnce() -> E + Send + 'static>> {
+    fn init(&mut self) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>> {
         let ns = self.resume_event.clone();
-        Some(Box::new(|| ns))
+        vec![Box::new(|| ns)]
     }
-    fn update(&mut self, e: &E) -> Option<Box<dyn FnOnce() -> E + Send + 'static>> {
+    fn update(&mut self, e: &E) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>> {
         let e = e.clone();
         if e == self.update_event && !self.paused {
             self.time = ((self.time + 0.01) * 100.0).round() / 100.0;
-            Some(Box::new(|| {
+            vec![Box::new(|| {
                 std::thread::sleep(std::time::Duration::new(0, 10000000));
                 e
-            }))
+            })]
         } else if e == self.pause_event {
             self.paused = true;
-            None
+            vec![]
         } else if e == self.resume_event && self.paused {
             let e = self.update_event.clone();
             self.paused = false;
-            Some(Box::new(move || e))
+            vec![Box::new(move || e)]
         } else {
-            None
+            vec![]
         }
     }
     fn view(&self) -> String {

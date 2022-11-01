@@ -28,13 +28,19 @@ pub enum SystemEvent {
 ///This trait allows the user to create custom events.
 ///*SystemEvent* implements this trait meaning that if the programer is content
 ///with the default events, they don't have to create their own wrapper.
-pub trait Event: Eq + Clone {
+pub trait Event: Eq + Clone + std::marker::Send + 'static {
     fn from_system_event(se: SystemEvent) -> Self;
     fn to_system_event(&self) -> Option<SystemEvent>;
 }
 
+///This trait should be implemented for the structures containg the program's state
 pub trait Model<E: Event> {
-    fn update(&mut self, e: &E) -> Option<Box<dyn FnOnce() -> E + Send + 'static>>;
+    ///This modifies the state of the program according to the event *e*
+    ///The return value is a vector of closures. Each closure will be executed on
+    ///a different thread and each of their return values will be supplied to
+    ///update as an argument in e
+    fn update(&mut self, e: &E) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>>;
+    ///This method turns the program's state into a string and returns the result
     fn view(&self) -> String;
 }
 
@@ -83,9 +89,9 @@ fn watch_resize<E: Event>(tx: mpsc::Sender<E>) {
 }
 
 ///Starts the event listeners and the main program loop
-pub fn run<E: Event + std::marker::Send + 'static, M: Model<E>>(
+pub fn run<E: Event, M: Model<E>>(
     model: &mut M,
-    cmd: Option<Box<dyn FnOnce() -> E + Send + 'static>>,
+    cmds: Vec<Box<dyn FnOnce() -> E + Send + 'static>>,
 ) {
     let mut stdout = termion::input::MouseTerminal::from(stdout().into_raw_mode().unwrap());
     let (tx, rx): (mpsc::Sender<E>, mpsc::Receiver<E>) = mpsc::channel();
@@ -97,15 +103,15 @@ pub fn run<E: Event + std::marker::Send + 'static, M: Model<E>>(
         let tx = tx.clone();
         std::thread::spawn(move || watch_resize(tx));
     }
-    if let Some(f) = cmd {
+    for c in cmds {
         let tx = tx.clone();
-        std::thread::spawn(move || tx.send(f()));
+        std::thread::spawn(move || tx.send(c()));
     }
     //We are guaranteed to recive at least one event on startup (the resize event)
     for i in rx.iter() {
-        if let Some(f) = model.update(&i) {
+        for c in model.update(&i) {
             let tx = tx.clone();
-            std::thread::spawn(move || tx.send(f()));
+            std::thread::spawn(move || tx.send(c()));
         }
         write!(
             stdout,
