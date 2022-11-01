@@ -33,8 +33,14 @@ pub trait Event: Eq + Clone + std::marker::Send + 'static {
     fn to_system_event(&self) -> Option<SystemEvent>;
 }
 
+///This trait should be implemented for the structures containg the program's state
 pub trait Model<E: Event> {
+    ///This modifies the state of the program according to the event *e*
+    ///The return value is a vector of closures. Each closure will be executed on
+    ///a different thread and each of their return values will be supplied to
+    ///update as an argument in e
     fn update(&mut self, e: &E) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>>;
+    ///This method turns the program's state into a string and returns the result
     fn view(&self) -> String;
 }
 

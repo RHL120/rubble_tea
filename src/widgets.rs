@@ -1,8 +1,8 @@
 ///The trait that all widgets must implement
 pub trait Widget<E: crate::Event + Send> {
-    ///Sets up the widget and returns an initial event
+    ///Sets up the widget and returns the initial events
     fn init(&mut self) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>>;
-    ///Handles an event and returns another one
+    ///Handles an event and returns a set of events
     fn update(&mut self, e: &E) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>>;
     ///Returns the string representation of a widget
     fn view(&self) -> String;
