@@ -250,3 +250,105 @@ impl<E: crate::Event + Send + 'static> Widget<E> for StopWatch<E> {
         format!("{:.2}", self.time)
     }
 }
+
+pub struct List<E: crate::Event + Send + 'static> {
+    elements: Vec<String>,
+    pages: Vec<(usize, usize)>,
+    index_in_page: usize,
+    page_index: usize,
+    selected_style: Option<Box<dyn Fn(&str) -> String>>,
+    unselected_style: Option<Box<dyn Fn(&str) -> String>>,
+    up_event: E,
+    down_event: E,
+    chose_events: Option<(E, E)>,
+    height: usize,
+}
+impl<E: crate::Event + Send + 'static> List<E> {
+    pub fn new(
+        elements: Vec<String>,
+        up_event: E,
+        down_event: E,
+        chose_events: Option<(E, E)>,
+        selected_style: Option<Box<dyn Fn(&str) -> String>>,
+        unselected_style: Option<Box<dyn Fn(&str) -> String>>,
+        height: u16,
+    ) -> Self {
+        let height = height as usize;
+        let n_pages = (elements.len() as f32 / height as f32).ceil() as usize;
+        let pages = (0..n_pages)
+            .map(|x| (x * height, x * height + height))
+            .collect();
+        List {
+            elements,
+            pages,
+            index_in_page: 0,
+            page_index: 0,
+            selected_style,
+            unselected_style,
+            up_event,
+            down_event,
+            height,
+            chose_events,
+        }
+    }
+}
+impl<E: crate::Event + Send + 'static> Widget<E> for List<E> {
+    fn init(&mut self) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>> {
+        vec![]
+    }
+    fn update(&mut self, e: &E) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>> {
+        let e = e.clone();
+        if self.down_event == e {
+            let new_index_in_page = self.index_in_page + 1;
+            if new_index_in_page < self.height {
+                self.index_in_page = new_index_in_page;
+            } else {
+                let new_page_index = self.page_index + 1;
+                if new_page_index < self.pages.len() {
+                    self.page_index = new_page_index;
+                    self.index_in_page = 0;
+                }
+            }
+        } else if self.up_event == e {
+            if let Some(new_index_in_page) = self.index_in_page.checked_sub(1) {
+                self.index_in_page = new_index_in_page;
+            } else {
+                if let Some(new_page_index) = self.page_index.checked_sub(1) {
+                    self.page_index = new_page_index;
+                    self.index_in_page = self.height - 1;
+                }
+            }
+        } else if let Some((r, s)) = &self.chose_events {
+            let r = r.clone();
+            if e == r {
+                let s = s.clone();
+                return vec![Box::new(|| s)];
+            }
+        }
+        vec![]
+    }
+    fn view(&self) -> String {
+        let mut ret = String::new();
+        let first = self.pages[self.page_index].0;
+        for i in first..self.pages[self.page_index].1 {
+            if i != first {
+                ret += "\n\r"
+            }
+            if i - first == self.index_in_page {
+                if let Some(f) = &self.selected_style {
+                    ret += &f(&self.elements[i]);
+                } else {
+                    ret += &format!("*>{}", self.elements[i]);
+                }
+            } else {
+                if let Some(f) = &self.unselected_style {
+                    ret += &f(&self.elements[i]);
+                } else {
+                    ret += &self.elements[i];
+                }
+            }
+            println!("{}", self.elements[i]);
+        }
+        ret
+    }
+}
