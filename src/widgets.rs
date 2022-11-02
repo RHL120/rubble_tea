@@ -251,6 +251,7 @@ impl<E: crate::Event + Send + 'static> Widget<E> for StopWatch<E> {
     }
 }
 
+//The structure representation of a List
 pub struct List<E: crate::Event + Send + 'static> {
     elements: Vec<String>,
     pages: Vec<(usize, usize)>,
@@ -264,6 +265,13 @@ pub struct List<E: crate::Event + Send + 'static> {
     height: usize,
 }
 impl<E: crate::Event + Send + 'static> List<E> {
+    ///Creates a new list with
+    ///*elements* being the elements in the list
+    ///*up_event* being the event for moving the cursor up
+    ///*down_event* being the event for moving the cursor down
+    ///*chose_events* the first event is the event that when recived, indicates
+    ///that the selected element has been chosen, the second is the event to be
+    ///emmited when an element has been chosen.
     pub fn new(
         elements: Vec<String>,
         up_event: E,
