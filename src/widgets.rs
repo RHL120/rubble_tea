@@ -360,3 +360,103 @@ impl<E: crate::Event + Send + 'static> Widget<E> for List<E> {
         ret
     }
 }
+
+pub struct TextInput<E: crate::Event + Send + 'static> {
+    input: String,
+    cursor_index: usize,
+    submition_event: E,
+    toggle_blink_event: Option<E>,
+    blinks: bool,
+}
+impl<E: crate::Event + Send + 'static> TextInput<E> {
+    pub fn new(submition_event: E, toggle_blink_event: Option<E>) -> Self {
+        TextInput {
+            input: String::new(),
+            cursor_index: 0,
+            submition_event,
+            toggle_blink_event,
+            blinks: true,
+        }
+    }
+    pub fn get_string<'a>(&'a self) -> &'a str {
+        &self.input
+    }
+    pub fn clear_string(&mut self) {
+        self.input = String::new();
+    }
+    pub fn is_blinking(&self) -> bool {
+        return self.blinks;
+    }
+}
+
+impl<E: crate::Event + Send + 'static> Widget<E> for TextInput<E> {
+    fn init(&mut self) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>> {
+        vec![]
+    }
+    fn update(&mut self, e: &E) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>> {
+        use crate::Key::*;
+        use crate::SystemEvent::*;
+        if let Some(be) = &self.toggle_blink_event {
+            let e = e.clone();
+            let be = be.clone();
+            if be == e {
+                self.blinks = !self.blinks;
+            }
+        }
+        if let Some(event) = e.to_system_event() {
+            match event {
+                KeyPress(Left) => {
+                    if self.cursor_index > 0 {
+                        self.cursor_index -= 1;
+                    }
+                }
+                KeyPress(Right) => {
+                    if self.cursor_index < self.input.len() {
+                        self.cursor_index += 1;
+                    }
+                }
+                KeyPress(Char('\n')) => {
+                    let e = self.submition_event.clone();
+                    return vec![Box::new(|| e)];
+                }
+                KeyPress(Char(x)) => {
+                    self.input = format!(
+                        "{}{}{}",
+                        &self.input[..self.cursor_index],
+                        x,
+                        &self.input[self.cursor_index..],
+                    );
+                    self.cursor_index += 1
+                }
+                KeyPress(Backspace) => {
+                    if self.cursor_index > 0 {
+                        self.input = format!(
+                            "{}{}",
+                            &self.input[..self.cursor_index - 1],
+                            &self.input[self.cursor_index..],
+                        );
+                        self.cursor_index -= 1
+                    }
+                }
+                _ => (),
+            };
+        }
+        return vec![];
+    }
+    fn view(&self) -> String {
+        use crate::style::*;
+        let cursor = if self.blinks {
+            StyleSheet::new()
+                .add(Style::TextStyle(TextStyle::Blink))
+                .render("|")
+        } else {
+            String::from("|")
+        };
+        format!(
+            "{}{}{}",
+            &self.input[..self.cursor_index],
+            cursor,
+            &self.input[self.cursor_index..]
+        )
+    }
+}
