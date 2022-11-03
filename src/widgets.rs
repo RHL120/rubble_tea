@@ -361,29 +361,37 @@ impl<E: crate::Event + Send + 'static> Widget<E> for List<E> {
     }
 }
 
+///The structure representation of a text-input
 pub struct TextInput<E: crate::Event + Send + 'static> {
     input: String,
     cursor_index: usize,
-    submition_event: E,
+    submission_event: E,
     toggle_blink_event: Option<E>,
     blinks: bool,
 }
 impl<E: crate::Event + Send + 'static> TextInput<E> {
-    pub fn new(submition_event: E, toggle_blink_event: Option<E>) -> Self {
+    ///Create a new TextInput with
+    ///*submission_event* being the event sent when enter is pressed
+    ///*toggle_blink_event* the event that when received turns off the cursor if
+    ///it is on and turns it on if it is off
+    pub fn new(submission_event: E, toggle_blink_event: Option<E>) -> Self {
         TextInput {
             input: String::new(),
             cursor_index: 0,
-            submition_event,
+            submission_event,
             toggle_blink_event,
             blinks: true,
         }
     }
+    ///Get the input string
     pub fn get_string<'a>(&'a self) -> &'a str {
         &self.input
     }
+    ///Clear the input string
     pub fn clear_string(&mut self) {
         self.input = String::new();
     }
+    ///Is the cursor blinking
     pub fn is_blinking(&self) -> bool {
         return self.blinks;
     }
@@ -416,7 +424,7 @@ impl<E: crate::Event + Send + 'static> Widget<E> for TextInput<E> {
                     }
                 }
                 KeyPress(Char('\n')) => {
-                    let e = self.submition_event.clone();
+                    let e = self.submission_event.clone();
                     return vec![Box::new(|| e)];
                 }
                 KeyPress(Char(x)) => {
