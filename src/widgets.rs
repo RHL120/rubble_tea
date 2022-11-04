@@ -468,3 +468,45 @@ impl<E: crate::Event + Send + 'static> Widget<E> for TextInput<E> {
         )
     }
 }
+
+pub struct ViewPort<E: crate::Event + Send + 'static> {
+    up_event: E,
+    down_event: E,
+    refresh_event: E,
+    pub string: String,
+    start_line: usize,
+    pub height: u16,
+    pub width: u16,
+}
+impl<E: crate::Event + Send + 'static> ViewPort<E> {
+    pub fn new(
+        string: String,
+        up_event: E,
+        down_event: E,
+        width: u16,
+        height: u16,
+        refresh_event: E,
+    ) -> Self {
+        ViewPort {
+            up_event,
+            down_event,
+            refresh_event,
+            string,
+            width,
+            height,
+            start_line: 0,
+        }
+    }
+}
+
+impl<E: crate::Event + Send + 'static> Widget<E> for ViewPort<E> {
+    fn init(&mut self) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>> {
+        vec![]
+    }
+    fn update(&mut self, e: &E) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>> {
+        todo!()
+    }
+    fn view(&self) -> String {
+        todo!()
+    }
+}
