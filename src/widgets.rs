@@ -469,15 +469,25 @@ impl<E: crate::Event + Send + 'static> Widget<E> for TextInput<E> {
     }
 }
 
+///The structure representation
 pub struct ViewPort<E: crate::Event + Send + 'static> {
     up_event: E,
     down_event: E,
     start_line: usize,
+    ///The contents of the string
     pub string: String,
+    ///The height of the viewport
     pub height: u16,
+    ///The width of the viewport
     pub width: u16,
 }
 impl<E: crate::Event + Send + 'static> ViewPort<E> {
+    ///Creates a new viewport with
+    ///*string* being the contents of the viewport
+    ///*up_event* being the event to scroll up
+    ///*down_event* being the event to scroll down
+    ///*width* being the width of the viewport
+    ///*height* is the height of the viewport
     pub fn new(string: String, up_event: E, down_event: E, width: u16, height: u16) -> Self {
         ViewPort {
             up_event,
