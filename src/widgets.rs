@@ -472,30 +472,53 @@ impl<E: crate::Event + Send + 'static> Widget<E> for TextInput<E> {
 pub struct ViewPort<E: crate::Event + Send + 'static> {
     up_event: E,
     down_event: E,
-    refresh_event: E,
-    pub string: String,
     start_line: usize,
+    pub string: String,
     pub height: u16,
     pub width: u16,
 }
 impl<E: crate::Event + Send + 'static> ViewPort<E> {
-    pub fn new(
-        string: String,
-        up_event: E,
-        down_event: E,
-        width: u16,
-        height: u16,
-        refresh_event: E,
-    ) -> Self {
+    pub fn new(string: String, up_event: E, down_event: E, width: u16, height: u16) -> Self {
         ViewPort {
             up_event,
             down_event,
-            refresh_event,
             string,
             width,
             height,
             start_line: 0,
         }
+    }
+    //The way this function is implemented and the way this whole widget is implemented
+    //is painfully slow.
+    fn split_lines(&self) -> Vec<String> {
+        let mut res = Vec::new();
+        let mut char_idx: usize = 0;
+        let mut line = String::new();
+        let mut skip_nline = false;
+        for chr in self.string.chars() {
+            if chr == '\n' {
+                if skip_nline {
+                    skip_nline = false;
+                    continue;
+                }
+                char_idx = 0;
+                res.push(line);
+                line = String::new();
+            } else if char_idx >= self.width as usize - 1 {
+                char_idx = 0;
+                line += &chr.to_string();
+                res.push(line);
+                line = String::new();
+                skip_nline = true;
+            } else {
+                line += &chr.to_string();
+                char_idx += 1;
+            }
+        }
+        if line != "" {
+            res.push(line);
+        }
+        res
     }
 }
 
@@ -504,9 +527,21 @@ impl<E: crate::Event + Send + 'static> Widget<E> for ViewPort<E> {
         vec![]
     }
     fn update(&mut self, e: &E) -> Vec<Box<dyn FnOnce() -> E + Send + 'static>> {
-        todo!()
+        let e = e.clone();
+        if e == self.up_event {
+            self.start_line = self.start_line.checked_sub(1).unwrap_or(self.start_line);
+        } else if e == self.down_event {
+            //I should probably check if the new start_line is in the range of the
+            //number of lines here but this is hard to do since the actual
+            //lining is done by view
+            self.start_line = self.start_line.checked_add(1).unwrap_or(self.start_line);
+        }
+        vec![]
     }
     fn view(&self) -> String {
-        todo!()
+        let ret = self.split_lines();
+        let end = self.height as usize + self.start_line;
+        let end = if end > ret.len() { ret.len() } else { end };
+        ret[self.start_line..end].join("\r\n")
     }
 }
