@@ -1,5 +1,5 @@
 # rubble_tea
-A rust TUI framework similar to golang's [bubbletea](https://github.com/charmbracelet/bubbletea/blob/master/README.md).
+A rust TUI framework similar to golang's [bubbletea](https://github.com/charmbracelet/bubbletea/).
 Unlike bubbletea which offers widgets and styling in different packages rubble_tea offers everything in a single package.
 ## Tutorial
 A rubble_tea program generally consists of two structures:
