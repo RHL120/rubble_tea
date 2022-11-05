@@ -252,14 +252,15 @@ impl<E: crate::Event + Send + 'static> Widget<E> for StopWatch<E> {
     }
 }
 
+type Styler = Box<dyn Fn(&str) -> String>;
 //The structure representation of a List
 pub struct List<E: crate::Event + Send + 'static> {
     elements: Vec<String>,
     pages: Vec<(usize, usize)>,
     index_in_page: usize,
     page_index: usize,
-    selected_style: Option<Box<dyn Fn(&str) -> String>>,
-    unselected_style: Option<Box<dyn Fn(&str) -> String>>,
+    selected_style: Option<Styler>,
+    unselected_style: Option<Styler>,
     up_event: E,
     down_event: E,
     chose_events: Option<(E, E)>,
@@ -278,8 +279,8 @@ impl<E: crate::Event + Send + 'static> List<E> {
         up_event: E,
         down_event: E,
         chose_events: Option<(E, E)>,
-        selected_style: Option<Box<dyn Fn(&str) -> String>>,
-        unselected_style: Option<Box<dyn Fn(&str) -> String>>,
+        selected_style: Option<Styler>,
+        unselected_style: Option<Styler>,
         height: u16,
     ) -> Self {
         let height = height as usize;
@@ -446,7 +447,7 @@ impl<E: crate::Event + Send + 'static> Widget<E> for TextInput<E> {
                 _ => (),
             };
         }
-        return vec![];
+        vec![]
     }
     fn view(&self) -> String {
         use crate::style::*;
