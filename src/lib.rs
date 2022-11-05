@@ -1,4 +1,6 @@
+///The module responsible for styling
 pub mod style;
+///A module that adds some prdefined widgets
 pub mod widgets;
 use std::io::{stdin, stdout, Write};
 use std::sync::mpsc;
@@ -29,7 +31,9 @@ pub enum SystemEvent {
 ///*SystemEvent* implements this trait meaning that if the programer is content
 ///with the default events, they don't have to create their own wrapper.
 pub trait Event: Eq + Clone + std::marker::Send + 'static {
+    ///Convert the event to a system event
     fn from_system_event(se: SystemEvent) -> Self;
+    ///Convert the a system event to the event
     fn to_system_event(&self) -> Option<SystemEvent>;
 }
 

@@ -197,7 +197,7 @@ impl<E: crate::Event + Send + 'static> Widget<E> for Timer<E> {
     }
 }
 
-//The structure representation of a stop watch
+///The structure representation of a stop watch
 pub struct StopWatch<E: crate::Event + Send + 'static> {
     resume_event: E,
     pause_event: E,
@@ -253,7 +253,7 @@ impl<E: crate::Event + Send + 'static> Widget<E> for StopWatch<E> {
 }
 
 type Styler = Box<dyn Fn(&str) -> String>;
-//The structure representation of a List
+///The structure representation of a List
 pub struct List<E: crate::Event + Send + 'static> {
     elements: Vec<String>,
     pages: Vec<(usize, usize)>,
