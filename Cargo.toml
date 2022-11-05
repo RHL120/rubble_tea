@@ -1,13 +1,13 @@
 [package]
 name = "rubble_tea"
-version = "5.2.0"
+version = "5.2.1"
 edition = "2021"
 license="GPL-3.0-or-later"
 authors = ["RHL120 <rhl120@protonmail.com>"]
 description = "A tui library that follows the MVC pattern"
 readme = "README.md"
 repository = "https://github.com/RHL120/rubble_tea"
-keywords = ["tui", "mvc", "nim", "bubbletea", "rubbletea"]
+keywords = ["tui", "mvc", "nim", "bubbletea", "ui"]
 categories = ["command-line-interface"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
