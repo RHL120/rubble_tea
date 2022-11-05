@@ -122,11 +122,8 @@ pub fn run<E: Event, M: Model<E>>(
         )
         .unwrap();
         stdout.flush().unwrap();
-        if let Some(x) = i.to_system_event() {
-            match x {
-                SystemEvent::Quit => break,
-                _ => (),
-            }
+        if Some(SystemEvent::Quit) == i.to_system_event() {
+            break;
         }
     }
 }

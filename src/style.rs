@@ -156,10 +156,12 @@ impl StyleSheet {
         StyleSheet(Vec::new())
     }
     /// Add another style to the style sheet
+    #[allow(clippy::should_implement_trait)]
     pub fn add(mut self, s: Style) -> StyleSheet {
         self.0.push(s);
         self
     }
+    #[warn(clippy::should_implement_trait)]
     /// Apply the given stylesheet onto the given object
     pub fn render<D: std::fmt::Display>(&self, d: D) -> String {
         let mut end = String::new();
@@ -176,6 +178,12 @@ impl StyleSheet {
             ret = format!("{}{}", ret, i);
         }
         format!("{}{}{}", ret, d, end)
+    }
+}
+
+impl Default for StyleSheet {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

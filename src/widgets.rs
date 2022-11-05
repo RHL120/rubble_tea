@@ -1,3 +1,4 @@
+use std::fmt::Write as _;
 ///The trait that all widgets must implement
 pub trait Widget<E: crate::Event + Send> {
     ///Sets up the widget and returns the initial events
@@ -320,11 +321,9 @@ impl<E: crate::Event + Send + 'static> Widget<E> for List<E> {
         } else if self.up_event == e {
             if let Some(new_index_in_page) = self.index_in_page.checked_sub(1) {
                 self.index_in_page = new_index_in_page;
-            } else {
-                if let Some(new_page_index) = self.page_index.checked_sub(1) {
-                    self.page_index = new_page_index;
-                    self.index_in_page = self.height - 1;
-                }
+            } else if let Some(new_page_index) = self.page_index.checked_sub(1) {
+                self.page_index = new_page_index;
+                self.index_in_page = self.height - 1;
             }
         } else if let Some((r, s)) = &self.chose_events {
             let r = r.clone();
@@ -346,14 +345,12 @@ impl<E: crate::Event + Send + 'static> Widget<E> for List<E> {
                 if let Some(f) = &self.selected_style {
                     ret += &f(&self.elements[i]);
                 } else {
-                    ret += &format!("*>{}", self.elements[i]);
+                    write!(ret, "*>{}", self.elements[i]).unwrap();
                 }
+            } else if let Some(f) = &self.unselected_style {
+                ret += &f(&self.elements[i]);
             } else {
-                if let Some(f) = &self.unselected_style {
-                    ret += &f(&self.elements[i]);
-                } else {
-                    ret += &self.elements[i];
-                }
+                ret += &self.elements[i];
             }
             println!("{}", self.elements[i]);
         }
@@ -384,7 +381,7 @@ impl<E: crate::Event + Send + 'static> TextInput<E> {
         }
     }
     ///Get the input string
-    pub fn get_string<'a>(&'a self) -> &'a str {
+    pub fn get_string(&self) -> &'_ str {
         &self.input
     }
     ///Clear the input string
@@ -393,7 +390,7 @@ impl<E: crate::Event + Send + 'static> TextInput<E> {
     }
     ///Is the cursor blinking
     pub fn is_blinking(&self) -> bool {
-        return self.blinks;
+        self.blinks
     }
 }
 
@@ -525,7 +522,7 @@ impl<E: crate::Event + Send + 'static> ViewPort<E> {
                 char_idx += 1;
             }
         }
-        if line != "" {
+        if !line.is_empty() {
             res.push(line);
         }
         res
