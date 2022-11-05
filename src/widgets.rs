@@ -447,7 +447,7 @@ impl<E: crate::Event + Send + 'static> Widget<E> for TextInput<E> {
                 _ => (),
             };
         }
-        return vec![];
+        vec![]
     }
     fn view(&self) -> String {
         use crate::style::*;
