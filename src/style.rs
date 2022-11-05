@@ -13,32 +13,54 @@ pub enum TextStyle {
 #[derive(Eq, PartialEq, Clone)]
 ///The color to be printed
 pub enum Color {
+    ///The terminal's default black color
     Black,
+    ///The terminal's default red color
     Red,
+    ///The terminal's default green color
     Green,
+    ///The terminal's default yello color
     Yellow,
+    ///The terminal's default blue color
     Blue,
+    ///The terminal's default magenta color
     Magenta,
+    ///The terminal's default cyan color
     Cyan,
+    ///The terminal's default white color
     White,
+    ///The terminal's default light black color
     LightBlack,
+    ///The terminal's default light red color
     LightRed,
+    ///The terminal's default light green red color
     LightGreen,
+    ///The terminal's default light yellow red color
     LightYellow,
+    ///The terminal's default light blue red color
     LightBlue,
+    ///The terminal's default light magenta red color
     LightMagenta,
+    ///The terminal's default light cyan red color
     LightCyan,
+    ///The terminal's default light white red color
     LightWhite,
 }
 
 #[derive(Eq, PartialEq, Clone)]
+///The position of the text
 pub enum Position {
     ///Zero indexed position
     Absolute(u16, u16),
+    ///Start the text at the center of the screen
     Center,
+    ///Start the text at the top left of the screen
     TopLeft,
+    ///Start the text at the top right of the screen
     TopRight,
+    ///Start the text at the bottom left of the screen
     BottomLeft,
+    ///Start the text at the bottom right of the screen
     BottomRight,
 }
 
